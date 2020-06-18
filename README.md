@@ -11,8 +11,7 @@ Options:
 
     -i <interface>      Interface to tap
     -u <port>           UDP port to tap
-    -d <host>           Destination host
-    -p <port>           Destination port
+    -d <host>:<port>    Destination
 
 EXAMPLE
 -------

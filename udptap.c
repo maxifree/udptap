@@ -45,7 +45,7 @@
 #include <pcap.h>
 
 #define DLT_LINUX_SLL_OFF    16
-#define DLT_EN10MB_OFF       16
+#define DLT_EN10MB_OFF       14
 
 #define DEFAULT_PCAP_SNAPLEN 0xffff
 
@@ -112,8 +112,7 @@ print_usage(FILE *out)
             "Options:\t\n"
             "\t-i <interface>      Interface to tap\n"
             "\t-u <port>           UDP port to tap\n"
-            "\t-d <host>           Destination host\n"
-            "\t-p <port>           Destination port\n"
+            "\t-d <host>:<port>    Destination\n"
             "\n"
             ;
         fprintf(out, "%s", usage);
@@ -128,6 +127,7 @@ main(int argc, char **argv)
 	struct bpf_program bpf;
 	char pcap_errbuf[PCAP_ERRBUF_SIZE];
 	char filter[128];
+	char *dest = NULL;
 	char *dest_host = NULL;
 	char *dest_port = NULL;
         char *tap_port = NULL;
@@ -137,11 +137,8 @@ main(int argc, char **argv)
                 case 'h':
                         print_usage(stdout);
                         exit(0);
-		case 'p':
-			dest_port = optarg;
-			break;
 		case 'd':
-			dest_host = optarg;
+			dest = optarg;
 			break;
 		case 'i':
 			interface = optarg;
@@ -157,8 +154,15 @@ main(int argc, char **argv)
 	argc -= optind;
 	argv += optind;
 
+	if (dest == NULL) {
+		errx(1, "Invalid usage: -d is required.");
+	}
+
+	dest_host = strtok(dest, ":");
+	dest_port = strtok(NULL, ":");
+
 	if (dest_host == NULL || dest_port == NULL) {
-		errx(1, "Invalid usage: -d and -p are both required.");
+		errx(1, "Invalid usage: argument for -d is in wrong format");
 	}
 	make_socket(dest_host, dest_port);
 
